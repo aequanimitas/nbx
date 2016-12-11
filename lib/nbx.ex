@@ -1,17 +1,26 @@
 defmodule Nbx do
   require Logger
 
-  def main(args) do
+  def main(_args) do
     {_, json} = HTTPoison.get "http://data.nba.com/data/10s/v2015/json/mobile_teams/nba/2016/scores/00_todays_scores.json"
     xx = json.body |> JSON.decode!
     xx["gs"]["g"] 
     |> Enum.map(&Nbx.format_into/1)
-    |> Enum.join(" ***** ")
-    |> inspect(pretty: true) 
-    |> Logger.info
+    |> Enum.map(&Nbx.show_info/1)
+  end
+
+  def show_info(%{"GAME" => game, "SCORE" => score, "TIME_REMAINING" => time}) do
+    IO.puts "-----"
+    IO.puts game
+    IO.puts score
+    IO.puts time
   end
 
   def format_into(x) do
-    "#{x["h"]["tc"]} #{x["h"]["tn"]} @ #{x["v"]["tc"]} #{x["v"]["tn"]} Scores: #{x["h"]["s"]} - #{x["v"]["s"]} Period: #{x["stt"]} Time Remaining: #{x["cl"]}"  
+    %{
+      "GAME" => "#{x["h"]["tc"]} #{x["h"]["tn"]} @ #{x["v"]["tc"]} #{x["v"]["tn"]}",
+      "SCORE" => "#{x["h"]["s"]} - #{x["v"]["s"]} Period: #{x["stt"]}",
+      "TIME_REMAINING" => "Time Remaining: #{x["cl"]}"
+    }
   end
 end
