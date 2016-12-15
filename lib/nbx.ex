@@ -6,21 +6,37 @@ defmodule Nbx do
     xx = json.body |> JSON.decode!
     xx["gs"]["g"] 
     |> Enum.map(&Nbx.format_into/1)
-    |> Enum.map(&Nbx.show_info/1)
+    |> Enum.each(&Nbx.show_info/1)
   end
 
-  def show_info(%{"GAME" => game, "SCORE" => score, "TIME_REMAINING" => time}) do
+  def show_info(%{"HOME" => home, "WINNER" => winner, "VISITING" => visiting, "PERIOD" => period, "TIME_REMAINING" => time}) do
     IO.puts "-----"
-    IO.puts game
-    IO.puts score
+    IO.puts home
+    IO.puts visiting
+    IO.puts period
     IO.puts time
+    IO.puts winner
   end
 
-  def format_into(x) do
+  def format_into(game) do
     %{
-      "GAME" => "#{x["h"]["tc"]} #{x["h"]["tn"]} @ #{x["v"]["tc"]} #{x["v"]["tn"]}",
-      "SCORE" => "#{x["h"]["s"]} - #{x["v"]["s"]} Period: #{x["stt"]}",
-      "TIME_REMAINING" => "Time Remaining: #{x["cl"]}"
+      "HOME" => "HOME: #{game["h"]["tc"]} #{game["h"]["tn"]} - #{get_score(game, "h")}",
+      "VISITING" => "VISITING: #{game["v"]["tc"]} #{game["v"]["tn"]} - #{get_score(game, "v")}",
+      "PERIOD" => "PERIOD: #{game["stt"]}",
+      "TIME_REMAINING" => "TIME REMAINING: #{game["cl"]}",
+      "WINNER" => "WINNER: #{get_winner(game)}"
     }
+  end
+
+  def get_winner(game) do
+    if get_score(game, "h") > get_score(game, "v") do
+      game["h"]["tc"]
+    else
+      game["v"]["tc"]
+    end
+  end
+
+  def get_score(game, key) do
+    game[key]["s"]
   end
 end
